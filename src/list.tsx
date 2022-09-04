@@ -5,7 +5,7 @@ interface MemberEntity {
   id: string;
   login: string;
   avatar_url: string;
-} 
+}  
 
 export const ListPage: React.FC = () => {
   const [members, setMembers] = React.useState<MemberEntity[]>([]);
@@ -20,24 +20,27 @@ export const ListPage: React.FC = () => {
   //     .then((list) => setMembers(list)); 
   // }, [filter]); 
 
-  fetch(`https://api.github.com/orgs/${filter}/members`).then((response) => {
-    if (response.ok) {
-      organizationDefault = organization;
-      return response.json();
-    } else {
-      setFilter(organizationDefault);
-      showError = true;
-      if (response.status === 404) { 
-          throw new Error('Error: Organization not found'); 
+  React.useEffect(() => { 
+    fetch(`https://api.github.com/orgs/${filter}/members`).then((response) => {
+      if (response.status === 200) {
+        organizationDefault = organization;
+        return response.json();
+      } else {
+        setFilter(organizationDefault);
+        showError = true;
+        if (response.status === 404) { 
+            throw new Error('Error: Organization not found'); 
+        }
       }
-    }
-  })
-  .then((responseJson) => {
-      setMembers(responseJson);
-  })
-  .catch((error) => {
-    console.log(error)
-  });
+    })
+    .then((responseJson) => {
+        setMembers(responseJson);
+    })
+    .catch((error) => {
+      console.log("The error: ", error)
+    });
+
+  }, [filter]); 
 
   const handleSearchOrganization = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
