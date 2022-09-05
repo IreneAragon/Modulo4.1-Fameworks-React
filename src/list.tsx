@@ -1,5 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import Paper from '@mui/material/Paper';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TablePagination from '@mui/material/TablePagination';
+import TableRow from '@mui/material/TableRow';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import SearchIcon from '@mui/icons-material/Search';
 
 interface MemberEntity { 
   id: string;
@@ -9,21 +20,17 @@ interface MemberEntity {
 
 export const ListPage: React.FC = () => {
   const [members, setMembers] = React.useState<MemberEntity[]>([]);
-  const [organization, setOrganization] = React.useState("Lemoncode"); 
-  const [filter, setFilter] = React.useState("Lemoncode"); 
+  const [organization, setOrganization] = React.useState(""); 
+  const [filter, setFilter] = React.useState(""); 
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+
   let organizationDefault = "Lemoncode";
   let showError = false;
-
-  // React.useEffect(() => {  
-  //   fetch(`https://api.github.com/orgs/${filter}/members`)
-  //     .then((response) => response.json())
-  //     .then((list) => setMembers(list)); 
-  // }, [filter]); 
 
   React.useEffect(() => { 
     fetch(`https://api.github.com/orgs/${filter}/members`).then((response) => {
       if (response.status === 200) {
-        organizationDefault = organization;
         return response.json();
       } else {
         setFilter(organizationDefault);
@@ -47,30 +54,63 @@ export const ListPage: React.FC = () => {
     setFilter(organization);
   };
 
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0); 
+  };
+
   return (
     <>
       <form onSubmit={handleSearchOrganization}>
-        <h2>Hello from List page</h2>
-        <input 
+        <h2>Search one organization from Github</h2>
+        <TextField 
           defaultValue="Lemoncode"
           onChange={(e) => setOrganization(e.target.value)}
-        />
-        <button type="submit">Search</button>
+          id="outlined-basic" 
+          label="Organization" 
+          variant="outlined" />
+        <Button type="submit" variant="contained" size="large" endIcon={<SearchIcon />}>
+          Search
+        </Button>
+        <h3>These are the members of {filter}</h3>
       </form>
 
-      <div className="list-user-list-container">
-        <span className="list-header">Avatar</span>
-        <span className="list-header">Id</span>
-        <span className="list-header">Name</span>
-        {members.map((member) => (
-          <>
-            <img src={member.avatar_url} />
-            <span>{member.id}</span>
-            <Link to={`/detail/${member.login}`}>{member.login}</Link>
-          </>
-        ))}
-      </div>
-      <Link to="/detail">Navigate to detail page</Link>
+      <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+        <TableContainer sx={{ maxHeight: '80vh' }}>
+          <Table stickyHeader aria-label="sticky table">
+            <TableHead>
+              <TableRow>
+                <TableCell> AVATAR </TableCell>
+                <TableCell> ID </TableCell>
+                <TableCell> NAME </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {members
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((member) => (
+                <TableRow hover role="checkbox" tabIndex={-1} key={member.id}>
+                      <TableCell><img src={member.avatar_url} /></TableCell>
+                      <TableCell>{member.id}</TableCell>
+                      <TableCell><Link to={`/detail/${member.login}`}>{member.login}</Link></TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25, 100]}
+          component="div"
+          count={members.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage} />
+      </Paper>
     </>
   );
 };
