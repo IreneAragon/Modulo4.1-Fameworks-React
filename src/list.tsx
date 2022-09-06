@@ -6,22 +6,49 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
 import SearchIcon from '@mui/icons-material/Search';
+import { 
+  CustomButton, 
+  CustomTableCell, 
+  CustomTablePagination, 
+  CustomTextField 
+} from '../src/customComponentsMui';
+import { styled } from '@mui/material/styles';
+
+const CustomTableBody = styled(TableBody) ({
+  background: '#536567',
+});
+
+const CustomTableRow = styled(TableRow) ({
+  '& td': {
+    color: '#ebebeb',
+    '& a': {
+      color: '#ebebeb',
+      textDecoration: 'unset',
+      border: '1px solid #BB86FC',
+      padding: '1em 1.5em',
+      background: '#BB86FC',
+      borderRadius: '5px',
+      '&:hover': {
+        background: '#03DAC6',
+        transition: '0.5s',
+        border: '1px solid #03DAC6',
+      },
+    },
+  },
+});
 
 interface MemberEntity { 
   id: string;
   login: string;
   avatar_url: string;
-}  
+} 
 
 export const ListPage: React.FC = () => {
   const [members, setMembers] = React.useState<MemberEntity[]>([]);
   const [organization, setOrganization] = React.useState(""); 
-  const [filter, setFilter] = React.useState(""); 
+  const [filter, setFilter] = React.useState("Lemoncode"); 
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
@@ -65,44 +92,52 @@ export const ListPage: React.FC = () => {
 
   return (
     <>
-      <form onSubmit={handleSearchOrganization}>
-        <h2>Search one organization from Github</h2>
-        <TextField 
-          defaultValue="Lemoncode"
-          onChange={(e) => setOrganization(e.target.value)}
-          id="outlined-basic" 
-          label="Organization" 
-          variant="outlined" />
-        <Button type="submit" variant="contained" size="large" endIcon={<SearchIcon />}>
-          Search
-        </Button>
-        <h3>These are the members of {filter}</h3>
-      </form>
+      <div className="form-list">
+        <form onSubmit={handleSearchOrganization}>
+          <h2 className="form-list__headline form-list__headline--color">Search one organization from Github</h2>
+          <div className="form-list__input-container">
+            <CustomTextField 
+              defaultValue="Lemoncode"
+              onChange={(e) => setOrganization(e.target.value)}
+              id="outlined-basic" 
+              label="Organization" 
+              variant="outlined" />
+            <CustomButton 
+              type="submit" 
+              variant="contained" 
+              size="large" 
+              endIcon={<SearchIcon />}>
+              Search
+            </CustomButton>
+          </div>
+          <h3 className="form-list__headline">These are the members of {filter}</h3>
+        </form>
+      </div>
 
       <Paper sx={{ width: '100%', overflow: 'hidden' }}>
         <TableContainer sx={{ maxHeight: '80vh' }}>
           <Table stickyHeader aria-label="sticky table">
             <TableHead>
               <TableRow>
-                <TableCell> AVATAR </TableCell>
-                <TableCell> ID </TableCell>
-                <TableCell> NAME </TableCell>
+                <CustomTableCell> AVATAR </CustomTableCell>
+                <CustomTableCell> ID </CustomTableCell>
+                <CustomTableCell> NAME </CustomTableCell>
               </TableRow>
             </TableHead>
-            <TableBody>
+            <CustomTableBody>
               {members
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((member) => (
-                <TableRow hover role="checkbox" tabIndex={-1} key={member.id}>
+                <CustomTableRow hover role="checkbox" tabIndex={-1} key={member.id}>
                       <TableCell><img src={member.avatar_url} /></TableCell>
                       <TableCell>{member.id}</TableCell>
                       <TableCell><Link to={`/detail/${member.login}`}>{member.login}</Link></TableCell>
-                </TableRow>
+                </CustomTableRow>
               ))}
-            </TableBody>
+            </CustomTableBody>
           </Table>
         </TableContainer>
-        <TablePagination
+        <CustomTablePagination
           rowsPerPageOptions={[5, 10, 25, 100]}
           component="div"
           count={members.length}
